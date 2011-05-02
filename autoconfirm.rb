@@ -3,7 +3,7 @@ require 'bundler/setup'
 require 'oauth2'
 require 'json'
 
-# https://www.cobot.me/oauth2/authorize?client_id=5e0cf837aad41eec609aedfb32f81c6e&scope=read%20write&response_type=token&redirect_uri=http://localhost/test
+# https://www.cobot.me/oauth2/authorize?client_id=YOUR_APP_KEY&scope=YOUR_SCOPE&response_type=token&redirect_uri=YOUR_REDIRECT_URL
 
 APP_KEY = 'YOUR_APP_KEY'
 APP_SECRET = 'YOUR_APP_SECRET'
