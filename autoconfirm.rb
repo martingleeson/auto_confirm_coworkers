@@ -3,48 +3,37 @@ require 'bundler/setup'
 require 'oauth2'
 require 'json'
 
-# https://www.cobot.me/oauth2/authorize?client_id=YOUR_APP_KEY&scope=YOUR_SCOPE&response_type=token&redirect_uri=YOUR_REDIRECT_URL
-
-APP_KEY = 'YOUR_APP_KEY'
-APP_SECRET = 'YOUR_APP_SECRET'
-APP_SCOPE = 'YOUR_SCOPE'
-APP_URL = 'YOUR_APP_URL'
-
-PROVIDER_URL = 'https://www.cobot.me'
-PROVIDER_AUTHORIZE_PATH = '/oauth2/authorize'
-PROVIDER_ACCESS_PATH = '/oauth2/access_token'
-
-USER_ACCESS_TOKEN = 'YOUR_USER_ACCESS_TOKEN'
-USER_SPACE_SUBDOMAIN = 'YOUR_SUBDOMAIN'
-
-puts 'started!'
-
 class Application
   
+  def initialize(subdomain,space)
+    @subdomain = subdomain
+    @space = space
+  end
+  
   def client
-    OAuth2::Client.new(APP_KEY, APP_SECRET, {
-        :access_token_method => :post,
-        :authorize_path => PROVIDER_AUTHORIZE_PATH,
-        :access_token_path => PROVIDER_ACCESS_PATH,
+    OAuth2::Client.new(
+      nil,
+      nil, {
         :parse_json => true,
-        :site => PROVIDER_URL,
+        :site => "https://#{@subdomain}.cobot.me",
         :ssl => {
           :ca_file => 'cacert.pem'
         }
-    })
+      }
+    )
   end
 
-  def run!
-    cobot_api = OAuth2::AccessToken.new(client, USER_ACCESS_TOKEN)
-    memberships = cobot_api.get("https://#{USER_SPACE_SUBDOMAIN}.cobot.me/api/memberships")
+  def run
+    cobot_api = OAuth2::AccessToken.new(client, @space['access_token'])
+    memberships = cobot_api.get("/api/memberships")
             
     memberships.each do |membership|
       if membership['confirmed_at'].nil?
-        cobot_api.post("https://#{USER_SPACE_SUBDOMAIN}.cobot.me/api/memberships/#{membership['id']}/confirmation")
-        puts "#{membership['user']['login']} confirmed."
+        cobot_api.post("/api/memberships/#{membership['id']}/confirmation")
       end
     end
-    'finished!'
+    puts 'finished!'
+    true
   end
   
 end
@@ -54,8 +43,11 @@ end
 #starting app
 begin
 
-app = Application.new
-puts app.run!
+  cobot_spaces = JSON.parse(ENV['COBOT_SPACES'])
+  cobot_spaces.each do |subdomain,space|
+    app = Application.new(subdomain,space)
+    app.run
+  end
 
 rescue => e
   
