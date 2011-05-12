@@ -32,8 +32,7 @@ class Application
         cobot_api.post("/api/memberships/#{membership['id']}/confirmation")
       end
     end
-    puts 'finished!'
-    true
+    'finished!'
   end
   
 end
@@ -46,7 +45,7 @@ begin
   cobot_spaces = JSON.parse(ENV['COBOT_SPACES'])
   cobot_spaces.each do |subdomain,space|
     app = Application.new(subdomain,space)
-    app.run
+    puts app.run
   end
 
 rescue => e
