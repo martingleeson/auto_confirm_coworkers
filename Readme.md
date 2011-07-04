@@ -1,24 +1,24 @@
 This script adds the capability to autoconfirm members on [cobot](http://cobot.me).
 
-It does that by regularly checking a coworking space's members for unconfirmed memberships. If it finds unconfirmed memberships they will be confirmed.
+It does that by regularly checking a coworking space's members for unconfirmed memberships. If it finds unconfirmed memberships, they will be confirmed.
 
 ### Getting Started
 
-* this script is built so that it runs as a cron job
-* it uses the cobot API to connect to cobot - for that it needs an OAuth2 access token (see below)
-* the easiest way to deploy is on heroku with the cron:daily addon installed
+* This script is built so that it runs as a cron job
+* It uses the cobot API to connect to cobot - for that it needs an OAuth2 access token (see below)
+* The easiest way to deploy is on heroku with the cron:daily addon installed
 
 
-#### getting an access token
+#### Getting an access token
 
-* register your app https://www.cobot.me/oauth2_clients/new and get the client id
-* go to <https://www.cobot.me/oauth2/authorize?client_id=$CLIENT_ID$&scope=read%20write&response_type=token&redirect_uri=http://localhost> (replacing $CLIENT_ID$ with the actual client id from step 1)
-* press `grant`
-* copy the token from the url in your browser
+* Register your app at https://www.cobot.me/oauth2_clients/new and get the client id
+* Go to <https://www.cobot.me/oauth2/authorize?client_id=$CLIENT_ID$&scope=read%20write&response_type=token&redirect_uri=http://localhost> (replacing $CLIENT_ID$ with the actual client id from step 1)
+* Press `grant`
+* Copy the token from the url in your browser
 
-#### deploying on heroku
+#### Deploying on heroku
 
-clone the source code and cd into the directoy. install ruby and the heroku gem. then:
+Clone the source code and cd into the directoy. Install ruby and the heroku gem. Then:
     
     heroku create <random app name>
     heroku addons:add cron:daily
@@ -26,9 +26,9 @@ clone the source code and cd into the directoy. install ruby and the heroku gem.
     heroku stack:migrate bamboo-mri-1.9.2
     git push heroku master
 
-#### running on your local machine
+#### Running on your local machine
 
-clone the source code and cd into the directoy. then:
+Clone the source code and cd into the directoy. Then:
 
     export COBOT_SPACES='{"YOUR_SUBDOMAIN": {"access_token": "YOUR_ACCESS_TOKEN"}}'
     bundle install
