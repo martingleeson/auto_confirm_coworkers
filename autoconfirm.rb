@@ -1,58 +1,61 @@
 require 'rubygems'
-require 'bundler/setup'
-require 'oauth2'
-require 'json'
+require 'bundler'
+Bundler.require
 
-class Application
-  
-  def initialize(subdomain,space)
-    @subdomain = subdomain
-    @space = space
+class Subscription
+  include DataMapper::Resource
+
+  property :id, Serial
+  property :space_subdomain, String
+  property :access_token, String, length: 256
+
+  def subscribe
+    save!
+    oauth.post "https://#{space_subdomain}.cobot.me/api/subscriptions", body: {
+      event: 'created_membership', callback_url: "https://#{Autoconfirm.host}/#{space_subdomain}/membership_notification"}
   end
-  
+
+  def confirm_membership(membership_url)
+    oauth.post "#{membership_url}/confirmation"
+  end
+
+  private
+
+  def oauth
+    @oauth ||= OAuth2::AccessToken.new(client, access_token)
+  end
+
   def client
-    OAuth2::Client.new(
+    @client ||= OAuth2::Client.new(
       nil,
       nil, {
-        :parse_json => true,
-        :site => "https://#{@subdomain}.cobot.me",
         :ssl => {
           :ca_file => 'cacert.pem'
         }
       }
     )
   end
-
-  def run
-    cobot_api = OAuth2::AccessToken.new(client, @space['access_token'])
-    memberships = cobot_api.get("/api/memberships")
-            
-    memberships.each do |membership|
-      if membership['confirmed_at'].nil?
-        cobot_api.post("/api/memberships/#{membership['id']}/confirmation")
-      end
-    end
-    'finished!'
-  end
-  
 end
 
-
-
-#starting app
-begin
-
-  cobot_spaces = JSON.parse(ENV['COBOT_SPACES'])
-  cobot_spaces.each do |subdomain,space|
-    app = Application.new(subdomain,space)
-    puts app.run
+class Autoconfirm < Sinatra::Base
+  configure do
+    DataMapper.finalize
   end
 
-rescue => e
-  
-  puts "Error: #{e}"
-    
+  configure(:test) do
+    DataMapper.setup(:default, 'postgres://@localhost/autoconfirm_test')
+    DataMapper::Logger.new(STDOUT, :debug)
+    set :host, 'example.com'
+  end
+
+  configure(:production) do
+    DataMapper.setup(:default, ENV['DATABASE_URL'])
+    set :host, 'cobot-autoconfirm.herokuapp.com'
+  end
+
+  post '/:space_subdomain/membership_notification' do
+    subscription = Subscription.first(space_subdomain: params[:space_subdomain])
+    url = JSON.parse(request.body.read)['url']
+    subscription.confirm_membership url
+  end
 end
-
-
-

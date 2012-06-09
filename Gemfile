@@ -1,11 +1,18 @@
 source 'http://rubygems.org'
 
 gem 'oauth2'
-gem 'faraday'
-gem 'multi_json'
-gem 'json_pure'
 gem 'rake'
-gem 'simplecov'
-gem 'rspec'
-gem 'ZenTest'
+gem 'sinatra'
+gem 'rack-test'
+gem 'pg'
+gem 'data_mapper'
+gem 'dm-postgres-adapter'
 gem 'json'
+
+group :development do
+  gem 'rspec'
+end
+
+group :test do
+  gem 'webmock', require: 'webmock/rspec'
+end

@@ -1,13 +1,13 @@
-This script adds the capability to autoconfirm members on [cobot](http://cobot.me).
+This script adds the capability to auto-confirm new members on [cobot](http://cobot.me).
 
-It does that by regularly checking a coworking space's members for unconfirmed memberships. If it finds unconfirmed memberships, they will be confirmed.
+It does that by subscribing to cobot's [webhooks api](https://www.cobot.me/pages/webhooks-api) and waiting for new memberships being created. If a new membership is created, it will be confirmed immediately.
 
 ### Getting Started
 
-* This script is built so that it runs as a cron job
-* It uses the cobot API to connect to cobot - for that it needs an OAuth2 access token (see below)
-* The easiest way to deploy is on heroku with the cron:daily addon installed
+* This script uses the cobot API to connect to cobot - for that it needs an OAuth2 access token (see below)
+* This script exposes a single API endpoint for the cobot webhooks API
 
+If you just want to use the functionality please contac Cobot – we run our own instance of this script and can add you to it. You don't have to install it yourself.
 
 #### Getting an access token
 
@@ -19,17 +19,19 @@ It does that by regularly checking a coworking space's members for unconfirmed m
 #### Deploying on heroku
 
 Clone the source code and cd into the directoy. Install ruby and the heroku gem. Then:
-    
-    heroku create <random app name>
-    heroku addons:add cron:daily
-    heroku config:add COBOT_SPACES='{"YOUR_SUBDOMAIN": {"access_token": "YOUR_ACCESS_TOKEN"}}'
-    heroku stack:migrate bamboo-mri-1.9.2
+
+    heroku create <random app name> --stack cedar
+    heroku config:add RACK_ENV=production
     git push heroku master
+    heroku run console
+    require './autoconfirm'
+    DataMapper.auto_migrate! # create database tables. only do this once as it wipes your database
+    Subscription.new(space_subdomain: <your-cobot-space-subdomain>,
+      access_token: <access-token>).subscribe
 
 #### Running on your local machine
 
 Clone the source code and cd into the directoy. Then:
 
-    export COBOT_SPACES='{"YOUR_SUBDOMAIN": {"access_token": "YOUR_ACCESS_TOKEN"}}'
-    bundle install
+    bundle
     ruby autoconfirm.rb

@@ -1,0 +1,2 @@
+require './autoconfirm'
+run Autoconfirm
