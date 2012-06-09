@@ -9,6 +9,10 @@ gem 'data_mapper'
 gem 'dm-postgres-adapter'
 gem 'json'
 
+group :production do
+  gem 'thin'
+end
+
 group :development do
   gem 'rspec'
 end

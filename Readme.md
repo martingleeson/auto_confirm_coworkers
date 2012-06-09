@@ -23,6 +23,7 @@ Clone the source code and cd into the directoy. Install ruby and the heroku gem.
     heroku create <random app name> --stack cedar
     heroku config:add RACK_ENV=production
     git push heroku master
+    heroku ps:scale web=1 # start the web app
     heroku run console
     require './autoconfirm'
     DataMapper.auto_migrate! # create database tables. only do this once as it wipes your database
