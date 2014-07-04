@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+ruby '2.1.2'
+
 gem 'oauth2'
 gem 'rake'
 gem 'sinatra'
@@ -10,7 +12,7 @@ gem 'dm-postgres-adapter'
 gem 'json'
 
 group :production do
-  gem 'thin'
+  gem 'puma'
 end
 
 group :development do
