@@ -7,7 +7,7 @@ It does that by subscribing to cobot's [webhooks api](https://www.cobot.me/pages
 * This script uses the cobot API to connect to cobot - for that it needs an OAuth2 access token (see below)
 * This script exposes a single API endpoint for the cobot webhooks API
 
-If you just want to use the functionality please contac Cobot – we run our own instance of this script and can add you to it. You don't have to install it yourself.
+If you just want to use the functionality please contact Cobot – we run our own instance of this script and can add you to it. You don't have to install it yourself.
 
 #### Getting an access token
 
@@ -29,6 +29,8 @@ Clone the source code and cd into the directoy. Install ruby and the heroku gem.
     DataMapper.auto_migrate! # create database tables. only do this once as it wipes your database
     Subscription.new(space_subdomain: <your-cobot-space-subdomain>,
       access_token: <access-token>).subscribe
+
+Optionally add `plan: '<plan name>'` to the subscription in order to only aut-confirm members on that plan.
 
 #### Running on your local machine
 

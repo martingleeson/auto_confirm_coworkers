@@ -8,6 +8,7 @@ class Subscription
   property :id, Serial
   property :space_subdomain, String
   property :access_token, String, length: 256
+  property :plan, String
 
   def subscribe
     save!
@@ -16,10 +17,20 @@ class Subscription
   end
 
   def confirm_membership(membership_url)
-    oauth.post "#{membership_url}/confirmation"
+    if should_confirm?(membership_url)
+      oauth.post "#{membership_url}/confirmation"
+    end
   end
 
   private
+
+  def should_confirm?(url)
+    if plan
+      JSON.parse(oauth.get(url).body)['plan']['name'] == plan
+    else
+      true
+    end
+  end
 
   def oauth
     @oauth ||= OAuth2::AccessToken.new(client, access_token)
