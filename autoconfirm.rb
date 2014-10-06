@@ -9,11 +9,15 @@ class Subscription
   property :space_subdomain, String
   property :access_token, String, length: 256
   property :plan, String
+  property :require_automated_payment_method, Boolean
 
   def subscribe
     save!
-    oauth.post "https://#{space_subdomain}.cobot.me/api/subscriptions", body: {
-      event: 'created_membership', callback_url: "https://#{Autoconfirm.host}/#{space_subdomain}/membership_notification"}
+    %w(created_membership updated_payment_method).each do |event|
+      oauth.post "https://#{space_subdomain}.cobot.me/api/subscriptions", body: {
+        event: event,
+        callback_url: "https://#{Autoconfirm.host}/#{space_subdomain}/membership_notification"}
+    end
   end
 
   def confirm_membership(membership_url)
@@ -25,11 +29,30 @@ class Subscription
   private
 
   def should_confirm?(url)
+    plan_matches?(url) && payment_method_ok?(url)
+  end
+
+  def plan_matches?(url)
     if plan
-      JSON.parse(oauth.get(url).body)['plan']['name'] == plan
+      get(url)[:plan][:name] == plan
     else
       true
     end
+  end
+
+  def payment_method_ok?(url)
+    if require_automated_payment_method
+      if payment_method = get(url)[:payment_method]
+        payment_method[:automated]
+      end
+    else
+      true
+    end
+  end
+
+  def get(url)
+    @gets ||= {}
+    @gets[url] ||= JSON.parse(oauth.get(url).body, symbolize_names: true)
   end
 
   def oauth
