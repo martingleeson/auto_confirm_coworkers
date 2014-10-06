@@ -17,13 +17,6 @@ describe 'setting up auto-confirm' do
         body: {event: 'created_membership',
                callback_url: "https://#{Autoconfirm.host}/co-up/membership_notification"}
       )).to have_been_made
-
-    expect(a_request(:post, 'https://co-up.cobot.me/api/subscriptions'
-      ).with(
-        headers: {'Authorization' => 'Bearer 12345'},
-        body: {event: 'updated_payment_method',
-               callback_url: "https://#{Autoconfirm.host}/co-up/membership_notification"}
-      )).to have_been_made
   end
 
   it 'confirms a new membership' do
@@ -68,9 +61,27 @@ describe 'setting up auto-confirm' do
   end
 
   context 'with automated payment method required' do
-    before(:each) do
+    let!(:subscription) do
       Subscription.create!(space_subdomain: 'co-up',
         access_token: '12345', require_automated_payment_method: true)
+    end
+
+    it 'subscribes to the created_membership and updated_payment_method events' do
+      subscription.subscribe
+
+      expect(a_request(:post, 'https://co-up.cobot.me/api/subscriptions'
+        ).with(
+          headers: {'Authorization' => 'Bearer 12345'},
+          body: {event: 'created_membership',
+                 callback_url: "https://#{Autoconfirm.host}/co-up/membership_notification"}
+        )).to have_been_made
+
+      expect(a_request(:post, 'https://co-up.cobot.me/api/subscriptions'
+        ).with(
+          headers: {'Authorization' => 'Bearer 12345'},
+          body: {event: 'updated_payment_method',
+                 callback_url: "https://#{Autoconfirm.host}/co-up/membership_notification"}
+        )).to have_been_made
     end
 
     it 'confirms memberships with an automated payment method' do

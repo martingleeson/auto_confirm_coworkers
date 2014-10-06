@@ -13,11 +13,8 @@ class Subscription
 
   def subscribe
     save!
-    %w(created_membership updated_payment_method).each do |event|
-      oauth.post "https://#{space_subdomain}.cobot.me/api/subscriptions", body: {
-        event: event,
-        callback_url: "https://#{Autoconfirm.host}/#{space_subdomain}/membership_notification"}
-    end
+    create_cobot_subscription :created_membership
+    create_cobot_subscription :updated_payment_method if require_automated_payment_method
   end
 
   def confirm_membership(membership_url)
@@ -27,6 +24,12 @@ class Subscription
   end
 
   private
+
+  def create_cobot_subscription(event)
+    oauth.post "https://#{space_subdomain}.cobot.me/api/subscriptions", body: {
+      event: event,
+      callback_url: "https://#{Autoconfirm.host}/#{space_subdomain}/membership_notification"}
+  end
 
   def should_confirm?(url)
     plan_matches?(url) && payment_method_ok?(url)
